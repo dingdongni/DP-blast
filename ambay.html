@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLOOM Partylist Tambayan</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #121212, #1e1e1e);
+            color: #eee;
+            text-align: center;
+            overflow-x: hidden;
+        }
+        .container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+            max-width: 900px;
+            margin: 20px auto;
+            box-sizing: border-box;
+            border-radius: 15px;
+            background-color: #1f1f1f;
+            border: 3px solid #ff66b2;
+            align-items: center;
+        }
+        .left-column, .right-column {
+            flex: 1;
+            min-width: 280px;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .left-column {
+            border-right: 2px solid #333;
+        }
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px; /* Space between canvas and button */
+        }
+        h1 {
+            color: #f8f8f8;
+            font-size: 1.8rem;
+            margin-bottom: 50px;
+            text-transform: none; /* Remove uppercase transformation */
+            letter-spacing: 1px;
+            font-weight: 600;
+            text-shadow: 0 0 4px #ff66b2, 0 0 6px #ff66b2; /* Subtle glow effect */
+        }
+        .form-group {
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #ddd;
+        }
+        .form-group select, 
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background-color: #333;
+            color: #eee;
+            box-sizing: border-box;
+        }
+        .form-group select:focus, 
+        .form-group input[type="file"]:focus {
+            border-color: #ff66b2;
+            outline: none;
+        }
+        .form-group button {
+            padding: 12px 24px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #ff66b2;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .form-group button:hover {
+            background-color: #ff3385;
+        }
+        .form-group button:active {
+            transform: scale(0.98);
+        }
+        #canvas {
+            background-color: #fff;
+            border: 4px solid #ff66b2;
+            border-radius: 12px;
+            width: 300px;
+            height: 300px;
+        }
+        .download-group {
+            text-align: center;
+        }
+        .download-group button {
+            padding: 12px 24px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #28a745;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .download-group button:hover {
+            background-color: #218838;
+        }
+        .download-group button:active {
+            transform: scale(0.98);
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                padding: 10px;
+                gap: 20px;
+                align-items: center;
+            }
+            .left-column {
+                border-right: none;
+                border-bottom: 2px solid #333;
+            }
+            .right-column {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 20px; /* Space between canvas and button */
+            }
+            #canvas {
+                width: 80vw;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-column">
+            <h1>B.L.O.O.M Partylist Tambayan</h1>
+            <div class="form-group">
+                <label for="theme">Choose a Theme:</label>
+                <select id="theme">
+                    <option value="blue">Blue</option>
+                    <option value="pink" selected>Pink</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="role">Choose a Role:</label>
+                <select id="role">
+                    <option value="president">President</option>
+                    <option value="vice-president">Vice President</option>
+                    <option value="secretary">Secretary</option>
+                    <option value="treasurer">Treasurer</option>
+                    <option value="senator">Senator</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="photo-upload">Upload Your Photo:</label>
+                <input type="file" id="photo-upload" accept="image/*" />
+            </div>
+            <div class="form-group">
+                <button id="apply-frame">Apply Frame</button>
+            </div>
+        </div>
+        <div class="right-column">
+            <canvas id="canvas"></canvas>
+            <div class="download-group">
+                <button id="download">Download Your Design</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"></script>
+    <script>
+        const canvas = new fabric.Canvas('canvas');
+        const canvasSize = 300;
+
+        canvas.setWidth(canvasSize);
+        canvas.setHeight(canvasSize);
+
+        const framePaths = {
+            blue: {
+                president: 'images/Blue-president.png',
+                'vice-president': 'images/Blue-vice-president.png',
+                secretary: 'images/Blue-secretary.png',
+                treasurer: 'images/Blue-treasurer.png',
+                senator: 'images/Blue-senator.png'
+            },
+            pink: {
+                president: 'images/Pink-president.png',
+                'vice-president': 'images/Pink-vice-president.png',
+                secretary: 'images/Pink-secretary.png',
+                treasurer: 'images/Pink-treasurer.png',
+                senator: 'images/Pink-senator.png'
+            }
+        };
+
+        document.getElementById('apply-frame').addEventListener('click', () => {
+    const photoFile = document.getElementById('photo-upload').files[0];
+    const theme = document.getElementById('theme').value;
+    const role = document.getElementById('role').value;
+    const frameUrl = framePaths[theme][role];
+
+    if (photoFile && frameUrl) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            // Clear the canvas
+            canvas.clear();
+
+            // Add the photo to the canvas
+            fabric.Image.fromURL(event.target.result, (photo) => {
+                // Set initial properties
+                photo.set({
+                    left: canvas.width / 2,
+                    top: canvas.height / 2,
+                    originX: 'center',
+                    originY: 'center',
+                    selectable: true, // Allow resizing and moving
+                    hasControls: true, // Show controls for resizing
+                    hasBorders: true,
+                });
+                canvas.add(photo);
+                photo.sendToBack(); // Ensure photo is initially at the back
+
+                // Add the frame to the canvas
+                fabric.Image.fromURL(frameUrl, (frame) => {
+                    frame.set({
+                        left: canvas.width / 2,
+                        top: canvas.height / 2,
+                        originX: 'center',
+                        originY: 'center',
+                        selectable: false, // Frame should not be selected
+                        evented: false // Frame should not respond to events
+                    });
+
+                    // Scale the frame to fit within the canvas
+                    const frameScaleX = canvas.width / frame.width;
+                    const frameScaleY = canvas.height / frame.height;
+                    const frameScale = Math.min(frameScaleX, frameScaleY);
+
+                    frame.set({
+                        scaleX: frameScale,
+                        scaleY: frameScale
+                    });
+
+                    canvas.add(frame);
+                    frame.bringToFront();
+
+                    // Keep the frame on top during interactions
+                    canvas.on('object:scaling', (e) => {
+                        if (e.target === photo) {
+                            canvas.bringToFront(frame); // Ensure frame is on top during scaling
+                        }
+                    });
+                    canvas.on('object:moving', (e) => {
+                        if (e.target === photo) {
+                            canvas.bringToFront(frame); // Ensure frame is on top during moving
+                        }
+                    });
+                });
+            });
+        };
+        reader.readAsDataURL(photoFile);
+    } else {
+        alert('Please upload a photo and select both a theme and a role.');
+    }
+});
+        document.getElementById('download').addEventListener('click', () => {
+            const dataURL = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = dataURL;
+            link.download = 'DP-blast-ni-brt.png';
+            link.click();
+        });
+    </script>
+</body>
+</html>
